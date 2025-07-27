@@ -26,12 +26,8 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
 
   @override
   void dispose() {
-    for (var c in _controllers.values) {
-      c.dispose();
-    }
-    for (var f in _focusNodes.values) {
-      f.dispose();
-    }
+    _controllers.values.forEach((c) => c.dispose());
+    _focusNodes.values.forEach((f) => f.dispose());
     super.dispose();
   }
 
@@ -49,7 +45,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   Widget _buildWidget(Map<String, dynamic> widgetData) {
     final type = widgetData['type'] as String? ?? '';
     final key = widgetData['key'] as String? ?? '';
-    final props = widgetData['props'] as Map<dynamic, dynamic>? ?? {};
+    final props = widgetData['props'] as Map<String, dynamic>? ?? {};
     final css = widgetData['css'] as Map<String, dynamic>? ?? {};
     final wrapperCss = widgetData['wrapperCss'] as Map<String, dynamic>? ?? {};
     final children = widgetData['children'] as List? ?? [];
@@ -70,6 +66,24 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       case 'MatNumberField':
         child = _buildMatNumberField(key, props, schema);
         break;
+      case 'MatTextField':
+        child = _buildMatTextField(key, props, schema);
+        break;
+      case 'MatDatePicker':
+        child = _buildMatDatePicker(key, props, schema);
+        break;
+      case 'Checkbox':
+        child = _buildCheckbox(key, props, schema);
+        break;
+      case 'radioButton':
+        child = _buildRadioButton(key, props, schema);
+        break;
+      case 'MatUpload':
+        child = _buildMatUpload(key, props, schema);
+        break;
+      case 'MatButton':
+        child = _buildMatButton(key, props, schema);
+        break;
       default:
         child = const SizedBox.shrink();
     }
@@ -88,9 +102,13 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: children
                 .cast<Map<String, dynamic>>()
-                .map((child) => _buildWidget(child))
+                .map((child) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: _buildWidget(child),
+                    ))
                 .toList(),
           ),
         ),
@@ -129,7 +147,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   }
 
   Widget _buildMatAutoComplete(
-      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
     final label = _getStringValue(props['label']);
     final type = _getStringValue(props['type']);
     final additionalDetailsJson = _getStringValue(props['additionalDetails']);
@@ -186,7 +204,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   }
 
   Widget _buildMatNumberField(
-      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
     final label = _getStringValue(props['label']);
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
     final amountInWords = _getBoolValue(props['amountInWords']);
@@ -222,16 +240,14 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
           },
           onSaved: (value) => _values[key] = value,
         ),
-        if (amountInWords &&
-            _values[key] != null &&
-            _values[key].toString().isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              _numberToWords(_values[key].toString().replaceAll(',', '')),
-              style: const TextStyle(color: Colors.blue, fontSize: 12),
-            ),
-          ),
+        // if (amountInWords && _values[key] != null && _values[key].toString().isNotEmpty)
+        //   Padding(
+        //     padding: const EdgeInsets.only(top: 4.0),
+        //     child: Text(
+        //       _numberToWords(_values[key].toString().replaceAll(',', '')),
+        //       style: const TextStyle(color: Colors.blue, fontSize: 12),
+        //     ),
+        //   ),
       ],
     );
   }
@@ -384,10 +400,326 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     }
   }
 
-  String _numberToWords(String number) {
-    // Simple implementation for demo - you'd want a proper Persian number-to-words converter
-    if (number.isEmpty) return '';
-    return 'مبلغ به حروف: $number';
+  Widget _buildMatTextField(
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
+    final label = _getStringValue(props['label']);
+    final validations = _getValidations(schema);
+
+    final controller =
+        _controllers.putIfAbsent(key, () => TextEditingController());
+    final focusNode = _focusNodes.putIfAbsent(key, () => FocusNode());
+
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) => _validateField(value, validations),
+      onChanged: (value) {
+        setState(() {
+          _values[key] = value;
+        });
+      },
+      onSaved: (value) => _values[key] = value,
+    );
+  }
+
+  Widget _buildMatDatePicker(
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
+    final label = _getStringValue(props['label']) ?? 'تاریخ را انتخاب کنید';
+    final validations = _getValidations(schema);
+
+    final controller =
+        _controllers.putIfAbsent(key, () => TextEditingController());
+
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        suffixIcon: const Icon(Icons.calendar_today),
+      ),
+      validator: (value) => _validateField(value, validations),
+      onTap: () async {
+        final selectedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime(2100),
+        );
+
+        if (selectedDate != null) {
+          final formattedDate =
+              '${selectedDate.year}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.day.toString().padLeft(2, '0')}';
+          controller.text = formattedDate;
+          setState(() {
+            _values[key] = formattedDate;
+          });
+        }
+      },
+      onSaved: (value) => _values[key] = value,
+    );
+  }
+
+  Widget _buildCheckbox(
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
+    final label = _getStringValue(props['label']);
+    final isActive = _getBoolValue(props['isActive']);
+    final activeColor = _parseColor(props['activeColor']);
+    final inactiveColor = _parseColor(
+        props['diactiveColor']); // Note: typo in JSON 'diactiveColor'
+    final validations = _getValidations(schema);
+
+    final currentValue = _values[key] as bool? ?? isActive;
+
+    return FormField<bool>(
+      initialValue: currentValue,
+      validator: (value) {
+        // Convert bool validation to string for reuse
+        final stringValue = value?.toString() ?? 'false';
+        return _validateField(stringValue, validations);
+      },
+      builder: (field) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Checkbox(
+                  value: currentValue,
+                  activeColor: activeColor,
+                  onChanged: (value) {
+                    setState(() {
+                      _values[key] = value ?? false;
+                    });
+                    field.didChange(value);
+                  },
+                ),
+                if (label.isNotEmpty)
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+              ],
+            ),
+            if (field.hasError)
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Text(
+                  field.errorText!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRadioButton(
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
+    final isActive = _getBoolValue(props['isActive']);
+    final activeColor = _parseColor(props['activeColor']);
+    final validations = _getValidations(schema);
+
+    final currentValue = _values[key] as bool? ?? isActive;
+
+    return FormField<bool>(
+      initialValue: currentValue,
+      validator: (value) {
+        final stringValue = value?.toString() ?? 'false';
+        return _validateField(stringValue, validations);
+      },
+      builder: (field) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Radio<bool>(
+              value: true,
+              groupValue: currentValue,
+              activeColor: activeColor,
+              onChanged: (value) {
+                setState(() {
+                  _values[key] = value ?? false;
+                });
+                field.didChange(value);
+              },
+            ),
+            if (field.hasError)
+              Text(
+                field.errorText!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMatUpload(
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
+    final label = _getStringValue(props['label']) ?? 'آپلود فایل';
+    final validations = _getValidations(schema);
+
+    final uploadedFiles = _values[key] as List<String>? ?? [];
+
+    return FormField<List<String>>(
+      initialValue: uploadedFiles,
+      validator: (value) {
+        final stringValue = value?.join(',') ?? '';
+        return _validateField(stringValue, validations);
+      },
+      builder: (field) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.cloud_upload,
+                    size: 48,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Simulate file selection
+                      _simulateFileUpload(key, field);
+                    },
+                    child: const Text('انتخاب فایل'),
+                  ),
+                ],
+              ),
+            ),
+            if (uploadedFiles.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: uploadedFiles.map((fileName) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.attachment, size: 16),
+                          const SizedBox(width: 4),
+                          Expanded(child: Text(fileName)),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 16),
+                            onPressed: () {
+                              setState(() {
+                                uploadedFiles.remove(fileName);
+                                _values[key] = uploadedFiles;
+                              });
+                              field.didChange(uploadedFiles);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            if (field.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  field.errorText!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMatButton(
+      String key, Map<String, dynamic> props, Map<String, dynamic> schema) {
+    final label = _getStringValue(props['label']) ?? 'ارسال';
+    final backgroundColor = _parseColor(props['backgroundColor']);
+    final textColor = _parseColor(props['textColor']);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        onPressed: () => submitForm(),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Color? _parseColor(dynamic colorProp) {
+    final colorString = _getStringValue(colorProp);
+    if (colorString.isEmpty) return null;
+
+    // Parse rgba(r, g, b, a) format
+    final rgbaMatch = RegExp(r'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)')
+        .firstMatch(colorString);
+    if (rgbaMatch != null) {
+      final r = int.parse(rgbaMatch.group(1)!);
+      final g = int.parse(rgbaMatch.group(2)!);
+      final b = int.parse(rgbaMatch.group(3)!);
+      final a = double.parse(rgbaMatch.group(4)!);
+      return Color.fromRGBO(r, g, b, a);
+    }
+
+    // Parse hex format
+    if (colorString.startsWith('#')) {
+      final hex = colorString.substring(1);
+      if (hex.length == 6) {
+        return Color(int.parse('FF$hex', radix: 16));
+      } else if (hex.length == 8) {
+        return Color(int.parse(hex, radix: 16));
+      }
+    }
+
+    return null;
+  }
+
+  void _simulateFileUpload(String key, FormFieldState<List<String>> field) {
+    // Simulate file picker - in real app, you'd use file_picker package
+    final uploadedFiles = _values[key] as List<String>? ?? [];
+    final newFileName = 'file_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+    setState(() {
+      uploadedFiles.add(newFileName);
+      _values[key] = uploadedFiles;
+    });
+
+    field.didChange(uploadedFiles);
   }
 
   void submitForm() {
