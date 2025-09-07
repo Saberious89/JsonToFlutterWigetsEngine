@@ -207,7 +207,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
     final label = _getStringValue(props['label']);
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
-    final amountInWords = _getBoolValue(props['amountInWords']);
+    _getBoolValue(props['amountInWords']);
     final showEndAdornment = _getBoolValue(props['showEndAdornment']);
     final validations = _getValidations(schema);
 
@@ -428,7 +428,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatDatePicker(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
-    final label = _getStringValue(props['label']) ?? 'تاریخ را انتخاب کنید';
+    final label = _getStringValue(props['label']);
     final validations = _getValidations(schema);
 
     final controller =
@@ -469,8 +469,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     final label = _getStringValue(props['label']);
     final isActive = _getBoolValue(props['isActive']);
     final activeColor = _parseColor(props['activeColor']);
-    final inactiveColor = _parseColor(
-        props['diactiveColor']); // Note: typo in JSON 'diactiveColor'
+    _parseColor(props['diactiveColor']); // Note: typo in JSON 'diactiveColor'
     final validations = _getValidations(schema);
 
     final currentValue = _values[key] as bool? ?? isActive;
@@ -563,7 +562,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatUpload(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
-    final label = _getStringValue(props['label']) ?? 'آپلود فایل';
+    final label = _getStringValue(props['label']);
     final validations = _getValidations(schema);
 
     final uploadedFiles = _values[key] as List<String>? ?? [];
@@ -656,7 +655,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatButton(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
-    final label = _getStringValue(props['label']) ?? 'ارسال';
+    final label = _getStringValue(props['label']);
     final backgroundColor = _parseColor(props['backgroundColor']);
     final textColor = _parseColor(props['textColor']);
 
