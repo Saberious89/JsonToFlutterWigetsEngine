@@ -262,6 +262,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     final label = _getStringValue(props['label']);
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
     _getBoolValue(props['amountInWords']);
+    final readOnly = props['disabled']['value'];
     final showEndAdornment = _getBoolValue(props['showEndAdornment']);
     final validations = _getValidations(schema);
 
@@ -275,6 +276,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         TextFormField(
           controller: controller,
           focusNode: focusNode,
+          readOnly: readOnly,
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
@@ -711,7 +713,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
     final label = _getStringValue(props['label']);
     final backgroundColor = _parseColor(props['backgroundColor']);
-    final textColor = _parseColor(props['textColor']);
+    final textColor = _parseColor(props['textColor']) ?? Colors.white;
 
     return Container(
       width: double.infinity,
