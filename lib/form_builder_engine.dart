@@ -26,8 +26,12 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
 
   @override
   void dispose() {
-    _controllers.values.forEach((c) => c.dispose());
-    _focusNodes.values.forEach((f) => f.dispose());
+    for (var c in _controllers.values) {
+      c.dispose();
+    }
+    for (var f in _focusNodes.values) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -59,6 +63,9 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         break;
       case 'RsContainer':
         child = _buildRsContainer(children, css);
+        break;
+      case 'RsLabel':
+        child = _buildRsLabel(props, css, wrapperCss);
         break;
       case 'MatAutoComplete':
         child = _buildMatAutoComplete(key, props, schema);
@@ -143,6 +150,53 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
                 ))
             .toList(),
       );
+    }
+  }
+
+  Widget _buildRsLabel(Map<dynamic, dynamic> props, Map<String, dynamic> css,
+      Map<String, dynamic> wrapperCss) {
+    // Extract text value
+    final textValue = props['text']?['value'] ?? '';
+
+    // Handle text alignment
+    TextAlign textAlign = TextAlign.start;
+    switch (css['textAlign']) {
+      case 'center':
+        textAlign = TextAlign.center;
+        break;
+      case 'right':
+        textAlign = TextAlign.right;
+        break;
+      case 'left':
+        textAlign = TextAlign.left;
+        break;
+    }
+
+    // Handle wrapper CSS (margin, padding, etc.)
+    EdgeInsetsGeometry? margin;
+    if (wrapperCss['marginBottom'] != null) {
+      final value = wrapperCss['marginBottom'] as String;
+      if (value.endsWith('px')) {
+        final px = double.tryParse(value.replaceAll('px', '')) ?? 0.0;
+        margin = EdgeInsets.only(bottom: px);
+      }
+    }
+
+    final textWidget = Text(
+      textValue,
+      textAlign: textAlign,
+      style: const TextStyle(
+        fontSize: 16, // You can extend by mapping more CSS props
+      ),
+    );
+
+    if (margin != null) {
+      return Container(
+        margin: margin,
+        child: textWidget,
+      );
+    } else {
+      return textWidget;
     }
   }
 
@@ -666,7 +720,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
