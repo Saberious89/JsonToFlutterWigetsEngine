@@ -6,12 +6,14 @@ typedef OnSubmit = void Function(Map<String, dynamic> values);
 
 class FormBuilderEngine extends StatefulWidget {
   final Map<String, dynamic> formJson;
+  final Map<String, dynamic>? initialData;
   final OnSubmit? onSubmit;
 
   const FormBuilderEngine({
     super.key,
     required this.formJson,
     this.onSubmit,
+    this.initialData,
   });
 
   @override
@@ -23,6 +25,14 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   final _controllers = <String, TextEditingController>{};
   final _values = <String, dynamic>{};
   final _focusNodes = <String, FocusNode>{};
+  Map<String, dynamic>? _initialValues;
+  List<Map<String, dynamic>>? allNumberFieldInitValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialValues = widget.initialData;
+  }
 
   @override
   void dispose() {
@@ -71,7 +81,8 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         child = _buildMatAutoComplete(key, props, schema);
         break;
       case 'MatNumberField':
-        child = _buildMatNumberField(key, props, schema);
+        child = _buildMatNumberField(key, props, schema,
+            initValues: _initialValues);
         break;
       case 'MatTextField':
         child = _buildMatTextField(key, props, schema);
@@ -258,8 +269,10 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   }
 
   Widget _buildMatNumberField(
-      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
+      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema,
+      {Map<String, dynamic>? initValues}) {
     final label = _getStringValue(props['label']);
+
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
     _getBoolValue(props['amountInWords']);
     final readOnly = props['disabled']['value'];
@@ -269,6 +282,9 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     final controller =
         _controllers.putIfAbsent(key, () => TextEditingController());
     final focusNode = _focusNodes.putIfAbsent(key, () => FocusNode());
+    if (initValues != null && initValues.containsKey(key)) {
+      controller.text = initValues[key];
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
