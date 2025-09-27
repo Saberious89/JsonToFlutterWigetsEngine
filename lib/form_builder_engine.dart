@@ -32,6 +32,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   final _focusNodes = <String, FocusNode>{};
   Map<String, dynamic>? _initialValues;
   List<Map<String, dynamic>>? allNumberFieldInitValue;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -69,6 +70,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     final wrapperCss = widgetData['wrapperCss'] as Map<String, dynamic>? ?? {};
     final children = widgetData['children'] as List? ?? [];
     final schema = widgetData['schema'] as Map<String, dynamic>? ?? {};
+    int startTimeFrom = int.parse(props['second']['value'] ?? '120');
 
     Widget child;
 
@@ -338,12 +340,18 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     Map<String, dynamic> schema,
   ) {
     int startTimeFrom = int.parse(props['second']['value'] ?? '120');
-    Timer(
+    _timer = Timer.periodic(
       Duration(seconds: 1),
-      () {
-        setState(() {
-          startTimeFrom = startTimeFrom - 1;
-        });
+      (Timer timer) {
+        if (startTimeFrom == 0) {
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            startTimeFrom--;
+          });
+        }
       },
     );
     switch (startTimeFrom) {
