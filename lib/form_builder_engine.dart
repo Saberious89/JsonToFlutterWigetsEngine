@@ -5,17 +5,20 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 
 typedef OnSubmit = void Function(Map<String, dynamic> values);
+typedef SecondaryFunc = void Function(dynamic values);
 
 class FormBuilderEngine extends StatefulWidget {
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
   final OnSubmit? onSubmit;
+  final SecondaryFunc? onSocondaryCall;
 
   const FormBuilderEngine({
     super.key,
     required this.formJson,
-    this.onSubmit,
     this.initialData,
+    this.onSubmit,
+    this.onSocondaryCall,
   });
 
   @override
@@ -347,6 +350,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       case 0:
         return TextButton(
           onPressed: () {
+            widget.onSocondaryCall?.call(null);
             setState(() {
               startTimeFrom = int.parse(props['second']['value'] ?? '120');
             });
