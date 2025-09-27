@@ -338,7 +338,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     Map<String, dynamic> schema,
   ) {
     int startTimeFrom = int.parse(props['second']['value'] ?? '120');
-    Timer.periodic(
+    var _timer = Timer.periodic(
       Duration(seconds: 1),
       (Timer timer) {
         if (startTimeFrom == 0) {
