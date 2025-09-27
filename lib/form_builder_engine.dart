@@ -1,5 +1,4 @@
-import 'dart:async';
-
+import 'package:dynamic_form_builder/timer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -209,6 +208,13 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       ),
     );
 
+    final regex = RegExp(r'#(\w+)');
+    final matches = regex.allMatches(textValue);
+
+    final placeholders = matches.map((m) => m.group(1)).toList();
+
+    print(placeholders);
+
     if (margin != null) {
       return Container(
         margin: margin,
@@ -337,38 +343,16 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     Map<dynamic, dynamic> props,
     Map<String, dynamic> schema,
   ) {
-    int startTimeFrom = int.parse(props['second']['value'] ?? '120');
-    var _timer = Timer.periodic(
-      Duration(seconds: 1),
-      (Timer timer) {
-        if (startTimeFrom == 0) {
-          setState(() {
-            timer.cancel();
-          });
-        } else {
-          setState(() {
-            startTimeFrom--;
-          });
-        }
-      },
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TimerWidget(
+          props: props,
+          thisKey: key,
+          schema: schema,
+        ),
+      ],
     );
-    switch (startTimeFrom) {
-      case 0:
-        return TextButton(
-          onPressed: () {
-            widget.onSocondaryCall?.call(null);
-            setState(() {
-              startTimeFrom = int.parse(props['second']['value'] ?? '120');
-            });
-          },
-          child: Text(props['onEndText']['value'] ?? "ارسال مجدد",
-              style: TextStyle(color: Colors.blue)),
-        );
-
-      default:
-        return Text('$startTimeFrom',
-            style: TextStyle(color: Colors.grey, fontSize: 14));
-    }
   }
 
   Widget _applyWrapperCss(Widget child, Map<String, dynamic> wrapperCss) {
@@ -777,6 +761,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     final label = _getStringValue(props['label']);
     final backgroundColor = _parseColor(props['backgroundColor']);
     final textColor = _parseColor(props['textColor']) ?? Colors.white;
+    final clickType = props['clickType']['value'];
 
     return Container(
       width: double.infinity,
@@ -790,7 +775,13 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
             borderRadius: BorderRadius.circular(4),
           ),
         ),
-        onPressed: () => submitForm(),
+        onPressed: () {
+          if (clickType == 'redirect') {
+            print('redirect');
+          } else {
+            submitForm();
+          }
+        },
         child: Text(
           label,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
