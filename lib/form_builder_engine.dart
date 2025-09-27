@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -86,6 +88,9 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         break;
       case 'MatTextField':
         child = _buildMatTextField(key, props, schema);
+        break;
+      case 'MobileTimerField':
+        child = _buildTimer(key, props, schema);
         break;
       case 'MatDatePicker':
         child = _buildMatDatePicker(key, props, schema);
@@ -322,6 +327,38 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         //   ),
       ],
     );
+  }
+
+  Widget _buildTimer(
+    String key,
+    Map<dynamic, dynamic> props,
+    Map<String, dynamic> schema,
+  ) {
+    int startTimeFrom = int.parse(props['second']['value'] ?? '120');
+    Timer(
+      Duration(seconds: 1),
+      () {
+        setState(() {
+          startTimeFrom = startTimeFrom - 1;
+        });
+      },
+    );
+    switch (startTimeFrom) {
+      case 0:
+        return TextButton(
+          onPressed: () {
+            setState(() {
+              startTimeFrom = int.parse(props['second']['value'] ?? '120');
+            });
+          },
+          child: Text(props['onEndText']['value'] ?? "ارسال مجدد",
+              style: TextStyle(color: Colors.blue)),
+        );
+
+      default:
+        return Text('$startTimeFrom',
+            style: TextStyle(color: Colors.grey, fontSize: 14));
+    }
   }
 
   Widget _applyWrapperCss(Widget child, Map<String, dynamic> wrapperCss) {
