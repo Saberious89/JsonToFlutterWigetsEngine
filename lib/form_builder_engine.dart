@@ -289,7 +289,10 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
 
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
     _getBoolValue(props['amountInWords']);
-    final readOnly = props['disabled']['value'];
+    bool readOnly = false;
+    if (props['disabled'] != null) {
+      readOnly = props['disabled']['value'];
+    }
     final showEndAdornment = _getBoolValue(props['showEndAdornment']);
     final validations = _getValidations(schema);
 
@@ -350,6 +353,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
           props: props,
           thisKey: key,
           schema: schema,
+          onSocondaryCall: (val) => widget.onSocondaryCall?.call(val),
         ),
       ],
     );

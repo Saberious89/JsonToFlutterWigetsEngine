@@ -60,12 +60,12 @@ class _TimerWidgetState extends State<TimerWidget> {
       case 0:
         return TextButton(
           onPressed: () {
-            widget.onSocondaryCall?.call(null);
-            setState(() {
-              startTimeFrom =
-                  int.parse(widget.props['second']['value'] ?? '120');
-            });
-            _startTimer();
+            widget.onSocondaryCall?.call({"isRetry": "true"});
+            // setState(() {
+            //   startTimeFrom =
+            //       int.parse(widget.props['second']['value'] ?? '120');
+            // });
+            // _startTimer();
           },
           child: Text(widget.props['onEndText']['value'] ?? "ارسال مجدد",
               style: const TextStyle(color: Colors.blue)),
