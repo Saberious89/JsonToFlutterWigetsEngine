@@ -7,35 +7,43 @@ typedef OnSubmit = void Function(Map<String, dynamic> values);
 typedef SecondaryFunc = void Function(dynamic values);
 
 class FormBuilderEngine extends StatefulWidget {
+  final bool? isLoading;
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
   final OnSubmit? onSubmit;
-  final SecondaryFunc? onSocondaryCall;
+
+  final SecondaryFunc? onSecondaryCall;
 
   const FormBuilderEngine({
     super.key,
     required this.formJson,
     this.initialData,
     this.onSubmit,
-    this.onSocondaryCall,
+    this.onSecondaryCall,
+    this.isLoading,
   });
 
   @override
-  _FormBuilderEngineState createState() => _FormBuilderEngineState();
+  FormBuilderEngineState createState() => FormBuilderEngineState();
 }
 
-class _FormBuilderEngineState extends State<FormBuilderEngine> {
+class FormBuilderEngineState extends State<FormBuilderEngine> {
   final _formKey = GlobalKey<FormState>();
   final _controllers = <String, TextEditingController>{};
   final _values = <String, dynamic>{};
   final _focusNodes = <String, FocusNode>{};
-  Map<String, dynamic>? _initialValues;
+  // Map<String, dynamic>? _initialValues;
   List<Map<String, dynamic>>? allNumberFieldInitValue;
 
   @override
   void initState() {
     super.initState();
-    _initialValues = widget.initialData;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // _initialValues = widget.initialData;
   }
 
   @override
@@ -47,6 +55,12 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       f.dispose();
     }
     super.dispose();
+  }
+
+  void clearValues() {
+    setState(() {
+      _values.clear();
+    });
   }
 
   @override
@@ -86,10 +100,11 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         break;
       case 'MatNumberField':
         child = _buildMatNumberField(key, props, schema,
-            initValues: _initialValues);
+            initValues: widget.initialData);
         break;
       case 'MatTextField':
-        child = _buildMatTextField(key, props, schema);
+        child = _buildMatTextField(key, props, schema,
+            initValues: widget.initialData);
         break;
       case 'MobileTimerField':
         child = _buildTimer(key, props, schema);
@@ -174,7 +189,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   Widget _buildRsLabel(Map<dynamic, dynamic> props, Map<String, dynamic> css,
       Map<String, dynamic> wrapperCss) {
     // Extract text value
-    final textValue = props['text']?['value'] ?? '';
+    String textValue = props['text']?['value'] ?? '';
 
     // Handle text alignment
     TextAlign textAlign = TextAlign.start;
@@ -200,6 +215,15 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
       }
     }
 
+    final regex = RegExp(r'#(\w+)');
+    final matches = regex.allMatches(textValue);
+
+    final placeholders = matches.map((m) => m.group(1)).toList();
+    if (placeholders.isNotEmpty) {
+      textValue = (textValue).replaceAll('#${placeholders.first}',
+          widget.initialData?['${placeholders.first}']);
+    }
+
     final textWidget = Text(
       textValue,
       textAlign: textAlign,
@@ -207,13 +231,6 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         fontSize: 16, // You can extend by mapping more CSS props
       ),
     );
-
-    final regex = RegExp(r'#(\w+)');
-    final matches = regex.allMatches(textValue);
-
-    final placeholders = matches.map((m) => m.group(1)).toList();
-
-    print(placeholders);
 
     if (margin != null) {
       return Container(
@@ -290,8 +307,12 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
     _getBoolValue(props['amountInWords']);
     bool readOnly = false;
+    int? maxLength;
     if (props['disabled'] != null) {
       readOnly = props['disabled']['value'];
+    }
+    if (props['maxLength'] != null) {
+      maxLength = props['maxLength'];
     }
     final showEndAdornment = _getBoolValue(props['showEndAdornment']);
     final validations = _getValidations(schema);
@@ -310,6 +331,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
           controller: controller,
           focusNode: focusNode,
           readOnly: readOnly,
+          maxLength: maxLength,
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
@@ -353,7 +375,7 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
           props: props,
           thisKey: key,
           schema: schema,
-          onSocondaryCall: (val) => widget.onSocondaryCall?.call(val),
+          onSocondaryCall: (val) => widget.onSecondaryCall?.call(val),
         ),
       ],
     );
@@ -508,13 +530,17 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
   }
 
   Widget _buildMatTextField(
-      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
+      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema,
+      {Map<String, dynamic>? initValues}) {
     final label = _getStringValue(props['label']);
     final validations = _getValidations(schema);
 
     final controller =
         _controllers.putIfAbsent(key, () => TextEditingController());
     final focusNode = _focusNodes.putIfAbsent(key, () => FocusNode());
+    if (initValues != null && initValues.containsKey(key)) {
+      controller.text = initValues[key];
+    }
 
     return TextFormField(
       controller: controller,
@@ -781,15 +807,18 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
         ),
         onPressed: () {
           if (clickType == 'redirect') {
-            print('redirect');
+            openUrl();
           } else {
             submitForm();
           }
         },
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+        child: widget.isLoading == true
+            ? const CircularProgressIndicator()
+            : Text(
+                label,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
       ),
     );
   }
@@ -839,6 +868,15 @@ class _FormBuilderEngineState extends State<FormBuilderEngine> {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
     widget.onSubmit?.call(_values);
+  }
+
+  void openUrl() {
+    //
+    if (widget.initialData!.containsKey('paymentLinkForCreditValidation')) {
+      widget.onSecondaryCall!.call({
+        "redirectUrl": widget.initialData?['paymentLinkForCreditValidation']
+      });
+    }
   }
 }
 
