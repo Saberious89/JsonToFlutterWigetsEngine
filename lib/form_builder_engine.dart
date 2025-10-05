@@ -1,3 +1,4 @@
+import 'package:dynamic_form_builder/doc_list_widget.dart';
 import 'package:dynamic_form_builder/timer_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,22 +7,26 @@ import 'dart:convert';
 
 typedef OnSubmit = void Function(Map<String, dynamic> values);
 typedef SecondaryFunc = void Function(dynamic values);
+typedef GetDocList = void Function(dynamic values);
 
 class FormBuilderEngine extends StatefulWidget {
   final bool? isLoading;
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
+  final List<Map<String, dynamic>>? docList;
   final OnSubmit? onSubmit;
-
   final SecondaryFunc? onSecondaryCall;
+  final GetDocList? getDocList;
 
   const FormBuilderEngine({
     super.key,
     required this.formJson,
     this.initialData,
+    this.docList,
     this.onSubmit,
     this.onSecondaryCall,
     this.isLoading,
+    this.getDocList,
   });
 
   @override
@@ -696,95 +701,103 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatUpload(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
-    final label = _getStringValue(props['label']);
-    final validations = _getValidations(schema);
-
-    final uploadedFiles = _values[key] as List<String>? ?? [];
-
-    return FormField<List<String>>(
-      initialValue: uploadedFiles,
-      validator: (value) {
-        final stringValue = value?.join(',') ?? '';
-        return _validateField(stringValue, validations);
-      },
-      builder: (field) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.cloud_upload,
-                    size: 48,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Simulate file selection
-                      _simulateFileUpload(key, field);
-                    },
-                    child: const Text('انتخاب فایل'),
-                  ),
-                ],
-              ),
-            ),
-            if (uploadedFiles.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: uploadedFiles.map((fileName) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.attachment, size: 16),
-                          const SizedBox(width: 4),
-                          Expanded(child: Text(fileName)),
-                          IconButton(
-                            icon: const Icon(Icons.close, size: 16),
-                            onPressed: () {
-                              setState(() {
-                                uploadedFiles.remove(fileName);
-                                _values[key] = uploadedFiles;
-                              });
-                              field.didChange(uploadedFiles);
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            if (field.hasError)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  field.errorText!,
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              ),
-          ],
-        );
+    return DocListWidget(
+      docList: widget.docList ?? [],
+      getDoc: () {
+        if (widget.getDocList != null) {
+          widget.getDocList!(null);
+        }
       },
     );
+    // final label = _getStringValue(props['label']);
+    // final validations = _getValidations(schema);
+
+    // final uploadedFiles = _values[key] as List<String>? ?? [];
+
+    // return FormField<List<String>>(
+    //   initialValue: uploadedFiles,
+    //   validator: (value) {
+    //     final stringValue = value?.join(',') ?? '';
+    //     return _validateField(stringValue, validations);
+    //   },
+    //   builder: (field) {
+    //     return Column(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         Container(
+    //           width: double.infinity,
+    //           padding: const EdgeInsets.all(16),
+    //           decoration: BoxDecoration(
+    //             border: Border.all(color: Colors.grey),
+    //             borderRadius: BorderRadius.circular(4),
+    //           ),
+    //           child: Column(
+    //             children: [
+    //               Icon(
+    //                 Icons.cloud_upload,
+    //                 size: 48,
+    //                 color: Colors.grey[600],
+    //               ),
+    //               const SizedBox(height: 8),
+    //               Text(
+    //                 label,
+    //                 style: TextStyle(
+    //                   fontSize: 16,
+    //                   color: Colors.grey[700],
+    //                 ),
+    //               ),
+    //               const SizedBox(height: 8),
+    //               ElevatedButton(
+    //                 onPressed: () {
+    //                   // Simulate file selection
+    //                   _simulateFileUpload(key, field);
+    //                 },
+    //                 child: const Text('انتخاب فایل'),
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //         if (uploadedFiles.isNotEmpty)
+    //           Padding(
+    //             padding: const EdgeInsets.only(top: 8.0),
+    //             child: Column(
+    //               crossAxisAlignment: CrossAxisAlignment.start,
+    //               children: uploadedFiles.map((fileName) {
+    //                 return Padding(
+    //                   padding: const EdgeInsets.symmetric(vertical: 2.0),
+    //                   child: Row(
+    //                     children: [
+    //                       const Icon(Icons.attachment, size: 16),
+    //                       const SizedBox(width: 4),
+    //                       Expanded(child: Text(fileName)),
+    //                       IconButton(
+    //                         icon: const Icon(Icons.close, size: 16),
+    //                         onPressed: () {
+    //                           setState(() {
+    //                             uploadedFiles.remove(fileName);
+    //                             _values[key] = uploadedFiles;
+    //                           });
+    //                           field.didChange(uploadedFiles);
+    //                         },
+    //                       ),
+    //                     ],
+    //                   ),
+    //                 );
+    //               }).toList(),
+    //             ),
+    //           ),
+    //         if (field.hasError)
+    //           Padding(
+    //             padding: const EdgeInsets.only(top: 4.0),
+    //             child: Text(
+    //               field.errorText!,
+    //               style: const TextStyle(color: Colors.red, fontSize: 12),
+    //             ),
+    //           ),
+    //       ],
+    //     );
+    //   },
+    // );
   }
 
   Widget _buildMatButton(
@@ -850,19 +863,6 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
     }
 
     return null;
-  }
-
-  void _simulateFileUpload(String key, FormFieldState<List<String>> field) {
-    // Simulate file picker - in real app, you'd use file_picker package
-    final uploadedFiles = _values[key] as List<String>? ?? [];
-    final newFileName = 'file_${DateTime.now().millisecondsSinceEpoch}.pdf';
-
-    setState(() {
-      uploadedFiles.add(newFileName);
-      _values[key] = uploadedFiles;
-    });
-
-    field.didChange(uploadedFiles);
   }
 
   void submitForm() {

@@ -26,8 +26,8 @@ class _TimerWidgetState extends State<TimerWidget> {
   @override
   void initState() {
     super.initState();
-    startTimeFrom = 10;
-    // startTimeFrom = int.parse(widget.props['second']['value'] ?? '120');
+    // startTimeFrom = 10;
+    startTimeFrom = int.parse(widget.props['second']['value'] ?? '120');
     _startTimer();
   }
 
