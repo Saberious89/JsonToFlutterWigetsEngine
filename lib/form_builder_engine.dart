@@ -1,4 +1,5 @@
 import 'package:dynamic_form_builder/timer_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -813,7 +814,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
           }
         },
         child: widget.isLoading == true
-            ? const CircularProgressIndicator()
+            ? const CupertinoActivityIndicator(color: Colors.white)
             : Text(
                 label,
                 style:
