@@ -313,12 +313,16 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
     final useThousandSeparator = _getBoolValue(props['useThousandSeparator']);
     _getBoolValue(props['amountInWords']);
     bool readOnly = false;
+    bool required = false;
     int? maxLength;
     if (props['disabled'] != null) {
       readOnly = props['disabled']['value'];
     }
+    if (props['required'] != null) {
+      required = props['required']['value'];
+    }
     if (props['maxLength'] != null) {
-      maxLength = props['maxLength'];
+      maxLength = props['maxLength']['value'];
     }
     final showEndAdornment = _getBoolValue(props['showEndAdornment']);
     final validations = _getValidations(schema);
@@ -346,10 +350,16 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
           decoration: InputDecoration(
             labelText: label,
             border: const OutlineInputBorder(),
+            counterText: '',
             suffixIcon:
                 showEndAdornment ? const Icon(Icons.attach_money) : null,
           ),
-          validator: (value) => _validateField(value, validations),
+          validator: (value) {
+            if (required && (value == null || value.isEmpty)) {
+              return '$key را وارد نمایید ';
+            }
+            return _validateField(value, validations);
+          },
           onChanged: (value) {
             setState(() {
               _values[key] = value;
