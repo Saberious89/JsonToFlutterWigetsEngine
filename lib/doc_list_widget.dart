@@ -1,16 +1,17 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-/// Widget that displays a list of documents and allows picking files.
 class DocUploaderWidget extends StatefulWidget {
   final Map<dynamic, dynamic> doc;
+  final ValueNotifier<double> uploadedProgress;
+
   final Function(Map<String, dynamic> doc) upload;
   const DocUploaderWidget({
     super.key,
     required this.doc,
     required this.upload,
+    required this.uploadedProgress,
   });
 
   @override
@@ -36,6 +37,7 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
           )
         : DocItemWidget(
             doc: widget.doc,
+            uploadedProgress: widget.uploadedProgress,
             upload: (doc) => widget.upload(doc),
             onFilePicked: (file) {
               _docFileList.add(file);
@@ -60,6 +62,7 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
 /// Widget representing a single document upload item.
 class DocItemWidget extends StatefulWidget {
   final Map<dynamic, dynamic> doc;
+  final ValueNotifier<double> uploadedProgress;
   final Function(Map<String, dynamic> doc) upload;
   final Function(File file) onFilePicked;
 
@@ -68,6 +71,7 @@ class DocItemWidget extends StatefulWidget {
     required this.doc,
     required this.onFilePicked,
     required this.upload,
+    required this.uploadedProgress,
   });
 
   @override
@@ -94,22 +98,13 @@ class _DocItemWidgetState extends State<DocItemWidget> {
 
   void _confirmAndSend() async {
     try {
-      var t = {
-        "DocumentId": widget.doc['documentId']['value'],
-        // "AgreementId": "",
-        "uploadLink": widget.doc['uploadLink']['value'],
-        "CustomerId": widget.doc['customerId']['value'],
-        "ActorType": widget.doc['actorType']['value'],
-        "File": "${File(_image!.path)}",
-      };
-      log(t.toString());
       widget.upload({
         "DocumentId": widget.doc['documentId']['value'],
         // "AgreementId": "",
         "uploadLink": widget.doc['uploadLink']['value'],
         "CustomerId": widget.doc['customerId']['value'],
         "ActorType": widget.doc['actorType']['value'],
-        "File": "${File(_image!.path)}",
+        "File": _image!.path,
       });
     } catch (e) {
       debugPrint('$e');
@@ -185,9 +180,16 @@ class _DocItemWidgetState extends State<DocItemWidget> {
             ),
             ElevatedButton(
               onPressed: _image == null ? null : _confirmAndSend,
-              child: const Text(
-                'تایید و ارسال',
-                style: TextStyle(color: Colors.white),
+              child: ValueListenableBuilder(
+                valueListenable: widget.uploadedProgress,
+                builder: (context, value, child) {
+                  return Text(
+                    (value > 0.0 && value < 100.0)
+                        ? '${value.toInt()}'
+                        : 'تایید و ارسال',
+                    style: TextStyle(color: Colors.white),
+                  );
+                },
               ),
             ),
           ],

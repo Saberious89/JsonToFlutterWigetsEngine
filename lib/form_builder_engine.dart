@@ -15,6 +15,7 @@ class FormBuilderEngine extends StatefulWidget {
   final bool? isLoading;
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
+  final ValueNotifier<double>? uploadedProgress;
   final OnSubmit? onSubmit;
   final SecondaryFunc? onSecondaryCall;
   final Function(Map<String, dynamic> doc)? docUpload;
@@ -26,6 +27,7 @@ class FormBuilderEngine extends StatefulWidget {
     this.onSubmit,
     this.onSecondaryCall,
     this.isLoading,
+    this.uploadedProgress,
     this.docUpload,
   });
 
@@ -713,6 +715,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
     return DocUploaderWidget(
         doc: props,
+        uploadedProgress: widget.uploadedProgress ?? ValueNotifier<double>(0),
         upload: (doc) {
           widget.docUpload!(doc);
         }
