@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dynamic_form_builder/doc_list_widget.dart';
 import 'package:dynamic_form_builder/timer_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,20 +15,18 @@ class FormBuilderEngine extends StatefulWidget {
   final bool? isLoading;
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
-  final List<Map<String, dynamic>>? docList;
   final OnSubmit? onSubmit;
   final SecondaryFunc? onSecondaryCall;
-  final GetDocList? getDocList;
+  final Function(Map<String, dynamic> doc)? docUpload;
 
   const FormBuilderEngine({
     super.key,
     required this.formJson,
     this.initialData,
-    this.docList,
     this.onSubmit,
     this.onSecondaryCall,
     this.isLoading,
-    this.getDocList,
+    this.docUpload,
   });
 
   @override
@@ -711,14 +711,18 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatUpload(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
-    return DocListWidget(
-      docList: widget.docList ?? [],
-      getDoc: () {
-        if (widget.getDocList != null) {
-          widget.getDocList!(null);
+    return DocUploaderWidget(
+        doc: props,
+        upload: (doc) {
+          widget.docUpload!(doc);
         }
-      },
-    );
+        // docList: widget.docList ?? [],
+        // getDoc: () {
+        //   if (widget.getDocList != null) {
+        //     widget.getDocList!(null);
+        //   }
+        // },
+        );
     // final label = _getStringValue(props['label']);
     // final validations = _getValidations(schema);
 
