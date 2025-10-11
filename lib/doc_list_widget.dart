@@ -76,7 +76,7 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                         },
                         additionalParameters: widget.additionalParameters,
                         upload: (doc) {
-                          return widget.upload(doc);
+                          return widget.isLoading ? null : widget.upload(doc);
                         },
                         onFilePicked: (file) {
                           // _docFileList.add(file);
