@@ -10,11 +10,14 @@ typedef SecondaryFunc = void Function(dynamic values);
 typedef GetDocList = void Function(dynamic values);
 
 class FormBuilderEngine extends StatefulWidget {
-  final bool? isLoading;
+  final bool? isSubmitLoading;
+  final bool isUploadLoading;
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
   final ValueNotifier<double>? uploadedProgress;
+  final int uploadedDocCount;
   final OnSubmit? onSubmit;
+  final Function(dynamic) onUploadDone;
   final SecondaryFunc? onSecondaryCall;
   final Function(Map<String, dynamic> doc)? docUpload;
 
@@ -24,9 +27,12 @@ class FormBuilderEngine extends StatefulWidget {
     this.initialData,
     this.onSubmit,
     this.onSecondaryCall,
-    this.isLoading,
+    this.isSubmitLoading,
     this.uploadedProgress,
     this.docUpload,
+    required this.isUploadLoading,
+    required this.uploadedDocCount,
+    required this.onUploadDone,
   });
 
   @override
@@ -125,7 +131,8 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
         child = _buildRadioButton(key, props, schema);
         break;
       case 'MatUpload':
-        child = _buildMatUpload(key, props, schema);
+        child = _buildMatUpload(key, props, schema,
+            initalValues: widget.initialData);
         break;
       case 'MatButton':
         child = _buildMatButton(key, props, schema);
@@ -710,20 +717,33 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
   }
 
   Widget _buildMatUpload(
-      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
-    return DocUploaderWidget(
-        doc: props,
+      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema,
+      {Map<String, dynamic>? initalValues}) {
+    if (initalValues != null &&
+        initalValues.isNotEmpty &&
+        initalValues.containsKey(key)) {
+      // widget.getDocCount!(initalValues[key].length);
+      String customerId = initalValues['customerId'];
+      String agreementId = initalValues['agreementId'];
+      props['customerId'] = customerId;
+      props['agreementId'] = agreementId;
+      return DocUploaderWidget(
+        docList: initalValues[key],
+        additionalParameters: [props],
         uploadedProgress: widget.uploadedProgress ?? ValueNotifier<double>(0),
+        isLoading: widget.isUploadLoading,
+        uploadedDocCount: widget.uploadedDocCount,
         upload: (doc) {
           widget.docUpload!(doc);
-        }
-        // docList: widget.docList ?? [],
-        // getDoc: () {
-        //   if (widget.getDocList != null) {
-        //     widget.getDocList!(null);
-        //   }
-        // },
-        );
+        },
+        onUploadDone: (val) {
+          widget.onUploadDone(val);
+        },
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+
     // final label = _getStringValue(props['label']);
     // final validations = _getValidations(schema);
 
@@ -841,7 +861,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
             submitForm();
           }
         },
-        child: widget.isLoading == true
+        child: widget.isSubmitLoading == true
             ? const CupertinoActivityIndicator(color: Colors.white)
             : Text(
                 label,

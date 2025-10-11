@@ -15,6 +15,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -35,6 +37,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -76,6 +80,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -116,6 +122,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -165,6 +173,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -205,6 +215,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -240,6 +252,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -285,6 +299,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -325,6 +341,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
@@ -360,6 +378,8 @@ void main() {
         MaterialApp(
           home: FormBuilderEngine(
             formJson: formJson,
+            isUploadLoading: false,
+            uploadedDocCount: 2,
           ),
         ),
       );
