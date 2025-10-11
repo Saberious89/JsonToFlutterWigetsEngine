@@ -63,9 +63,9 @@ class _TimerWidgetState extends State<TimerWidget> {
           onPressed: () {
             widget.onSocondaryCall?.call({"isRetry": "true"});
             setState(() {
-              // startTimeFrom =
-              //     int.parse(widget.props['second']['value'] ?? '120');
-              startTimeFrom = 10;
+              startTimeFrom =
+                  int.parse(widget.props['second']['value'] ?? '120');
+              // startTimeFrom = 10;
             });
             _startTimer();
           },
