@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dynamic_form_builder/enums.dart';
+import 'package:cross_file/cross_file.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -107,7 +109,7 @@ class DocItemWidget extends StatefulWidget {
   final List<Map<dynamic, dynamic>>? additionalParameters;
   final ValueNotifier<double> uploadedProgress;
   final Function(Map<String, dynamic> doc) upload;
-  final Function(File file) onFilePicked;
+  final Function(XFile file) onFilePicked;
   final Function(dynamic) onUploadDone;
 
   const DocItemWidget({
@@ -126,13 +128,13 @@ class DocItemWidget extends StatefulWidget {
 }
 
 class _DocItemWidgetState extends State<DocItemWidget> {
-  File? _image;
+  XFile? _image;
 
   void _pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles();
       if (result != null && result.files.single.path != null) {
-        final file = File(result.files.single.path!);
+        final file = result.files.single.xFile;
         widget.onFilePicked(file);
         setState(() {
           _image = file;
@@ -227,7 +229,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.file(
-                              _image!,
+                              File(_image!.path),
                               height: 100,
                               width: 100,
                               fit: BoxFit.cover,
@@ -310,7 +312,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
 }
 
 class FullImageView extends StatelessWidget {
-  final File? imageFile;
+  final XFile? imageFile;
   final String? imagePath;
   final String heroTag;
 
@@ -332,7 +334,7 @@ class FullImageView extends StatelessWidget {
             tag: heroTag,
             child: (imagePath != null && imagePath!.isNotEmpty)
                 ? Image.network(imagePath!, fit: BoxFit.contain)
-                : Image.file(imageFile!, fit: BoxFit.contain),
+                : Image.file(File(imageFile!.path), fit: BoxFit.contain),
           ),
         ),
       ),

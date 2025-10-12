@@ -17,6 +17,7 @@ void main() {
             formJson: formJson,
             isUploadLoading: false,
             uploadedDocCount: 2,
+            onUploadDone: (val) {},
           ),
         ),
       );
@@ -36,10 +37,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -79,10 +80,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -121,10 +122,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -172,10 +173,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -214,10 +215,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -251,10 +252,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -298,10 +299,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -340,10 +341,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
@@ -377,10 +378,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: FormBuilderEngine(
-            formJson: formJson,
-            isUploadLoading: false,
-            uploadedDocCount: 2,
-          ),
+              formJson: formJson,
+              isUploadLoading: false,
+              uploadedDocCount: 2,
+              onUploadDone: (val) {}),
         ),
       );
 
