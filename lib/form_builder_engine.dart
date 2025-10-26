@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 
+import 'package:syncfusion_flutter_gauges/gauges.dart';
+
 typedef OnSubmit = void Function(Map<String, dynamic> values);
 typedef SecondaryFunc = void Function(dynamic values);
 typedef GetDocList = void Function(dynamic values);
@@ -136,6 +138,9 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
         break;
       case 'MatButton':
         child = _buildMatButton(key, props, schema);
+        break;
+      case 'Guage':
+        child = _buildGuage(key, props, schema);
         break;
       default:
         child = const SizedBox.shrink();
@@ -332,7 +337,14 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
       maxLength = props['maxLength']['value'];
     }
     final showEndAdornment = _getBoolValue(props['showEndAdornment']);
-    final validations = _getValidations(schema);
+    final validations = (props['requireValidationMessage'] != null &&
+            props['requireValidationMessage'] != '')
+        ? props['requireValidationMessage']['value']
+        : _getValidations(schema);
+
+        final lengthValidation = (props['maxLengthValidationMessage'] != null &&
+            props['maxLengthValidationMessage'] != '')
+        ? props['maxLengthValidationMessage']['value']:'';
 
     final controller =
         _controllers.putIfAbsent(key, () => TextEditingController());
@@ -363,11 +375,16 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
           ),
           validator: (value) {
             if (required && (value == null || value.isEmpty)) {
-              return '$key را وارد نمایید ';
+              return validations;
             }
-            return _validateField(value, validations);
+             if (value!.length < (maxLength ?? 6)) {
+             return lengthValidation;
+            }
+            return null;
+            // return _validateField(value, validations);
           },
           onChanged: (value) {
+           
             setState(() {
               _values[key] = value;
             });
@@ -868,6 +885,211 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+      ),
+    );
+  }
+
+  Widget _buildGuage(
+      String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
+    double _scoreRate = 0.0;
+    return Stack(
+      children: [
+        SfRadialGauge(axes: <RadialAxis>[
+          RadialAxis(
+              minimum: 250,
+              maximum: 900,
+              radiusFactor: 0.60,
+              labelOffset: -50,
+              tickOffset: 20,
+              showLastLabel: true,
+              centerY: 0.4,
+              axisLabelStyle: GaugeTextStyle(),
+              ranges: <GaugeRange>[
+                GaugeRange(
+                    startWidth: 24,
+                    endWidth: 24,
+                    startValue: 250,
+                    endValue: 460,
+                    label: "خیلی ضعیف",
+                    labelStyle: GaugeTextStyle(color: Colors.white),
+                    color: Colors.red),
+                GaugeRange(
+                    startWidth: 24,
+                    endWidth: 24,
+                    startValue: 460,
+                    endValue: 520,
+                    label: "ضعیف",
+                    labelStyle: GaugeTextStyle(
+                      color: Colors.white,
+                    ),
+                    color: Colors.orange),
+                GaugeRange(
+                    startWidth: 24,
+                    endWidth: 24,
+                    startValue: 520,
+                    endValue: 580,
+                    label: "متوسط",
+                    labelStyle: GaugeTextStyle(color: Colors.white),
+                    color: Colors.yellow.shade700),
+                GaugeRange(
+                    startWidth: 24,
+                    endWidth: 24,
+                    startValue: 580,
+                    endValue: 640,
+                    label: "خوب",
+                    labelStyle: GaugeTextStyle(
+                      color: Colors.white,
+                    ),
+                    color: Colors.green.shade200),
+                GaugeRange(
+                    startWidth: 24,
+                    endWidth: 24,
+                    startValue: 640,
+                    endValue: 900,
+                    label: "خیلی خوب",
+                    labelStyle: GaugeTextStyle(
+                      color: Colors.white,
+                    ),
+                    color: Colors.green)
+              ],
+              pointers: <GaugePointer>[
+                NeedlePointer(value: double.parse((0).toString()))
+              ],
+              annotations: <GaugeAnnotation>[
+                GaugeAnnotation(
+                    widget: SizedBox(
+                      height: 54,
+                      child: Column(
+                        children: [
+                          Text((0).toString(),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text('امتیاز اعتباری',
+                              style: TextStyle(fontWeight: FontWeight.bold))
+                        ],
+                      ),
+                    ),
+                    angle: 90,
+                    positionFactor: 0.7)
+              ])
+        ]),
+        Positioned(
+            left: 0,
+            right: 0,
+            top: MediaQuery.sizeOf(context).height * .32,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'رتبه اعتباری',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                '',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            ],
+                          ),
+                          Container(
+                            width: double.infinity,
+                            height: 1,
+                            color: Colors.grey.shade300,
+                            margin: EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          Text(
+                            '',
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            'امتیاز شما',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(
+                            height: 4,
+                          ),
+                          Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.symmetric(horizontal: 12),
+                            height: 1,
+                            color: Colors.grey.shade300,
+                          ),
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _star(_scoreRate >= 1
+                                    ? 0
+                                    : _scoreRate < 0
+                                        ? 2
+                                        : 1),
+                                _star(_scoreRate >= 2
+                                    ? 0
+                                    : _scoreRate < 1
+                                        ? 2
+                                        : 1),
+                                _star(_scoreRate >= 3
+                                    ? 0
+                                    : _scoreRate < 2
+                                        ? 2
+                                        : 1),
+                                _star(_scoreRate >= 4
+                                    ? 0
+                                    : _scoreRate < 3
+                                        ? 2
+                                        : 1),
+                                _star(_scoreRate >= 5
+                                    ? 0
+                                    : _scoreRate < 4
+                                        ? 2
+                                        : 1),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ))
+      ],
+    );
+  }
+
+  Widget _star(int state) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(1, 2, 1, 0),
+      child: Icon(
+        state == 0
+            ? CupertinoIcons.star_fill
+            : state == 1
+                ? CupertinoIcons.star_lefthalf_fill
+                : CupertinoIcons.star,
+        size: 16,
+        color:
+            state == 0 || state == 1 ? Color(0xffFFD700) : Colors.grey.shade300,
       ),
     );
   }
