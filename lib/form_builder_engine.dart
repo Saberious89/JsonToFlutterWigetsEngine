@@ -237,7 +237,8 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
     final matches = regex.allMatches(textValue);
 
     final placeholders = matches.map((m) => m.group(1)).toList();
-    if (placeholders.isNotEmpty) {
+    if (placeholders.isNotEmpty &&
+        (widget.initialData?['${placeholders.first}'] != null)) {
       textValue = (textValue).replaceAll('#${placeholders.first}',
           widget.initialData?['${placeholders.first}']);
     }
@@ -246,7 +247,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
       textValue,
       textAlign: textAlign,
       style: const TextStyle(
-        fontSize: 16, // You can extend by mapping more CSS props
+        fontSize: 16,
       ),
     );
 
@@ -342,14 +343,15 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
         ? props['requireValidationMessage']['value']
         : _getValidations(schema);
 
-        final lengthValidation = (props['maxLengthValidationMessage'] != null &&
+    final lengthValidation = (props['maxLengthValidationMessage'] != null &&
             props['maxLengthValidationMessage'] != '')
-        ? props['maxLengthValidationMessage']['value']:'';
+        ? props['maxLengthValidationMessage']['value']
+        : '';
 
     final controller =
         _controllers.putIfAbsent(key, () => TextEditingController());
     final focusNode = _focusNodes.putIfAbsent(key, () => FocusNode());
-    if (initValues != null && initValues.containsKey(key)) {
+    if (initValues != null && initValues.containsKey(key) && key != 'otp') {
       controller.text = initValues[key];
     }
 
@@ -377,14 +379,13 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
             if (required && (value == null || value.isEmpty)) {
               return validations;
             }
-             if (value!.length < (maxLength ?? 6)) {
-             return lengthValidation;
+            if (maxLength != null && value!.length > (maxLength)) {
+              return lengthValidation;
             }
             return null;
             // return _validateField(value, validations);
           },
           onChanged: (value) {
-           
             setState(() {
               _values[key] = value;
             });
@@ -758,7 +759,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
         },
       );
     } else {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     // final label = _getStringValue(props['label']);
@@ -854,10 +855,16 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatButton(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema) {
+    String? urlLink;
     final label = _getStringValue(props['label']);
     final backgroundColor = _parseColor(props['backgroundColor']);
     final textColor = _parseColor(props['textColor']) ?? Colors.white;
     final clickType = props['clickType']['value'];
+    if (props['urlKey'] != null) {
+      final urlKey = props['urlKey']['value'];
+
+      urlLink = widget.initialData?[urlKey];
+    }
 
     return Container(
       width: double.infinity,
@@ -873,7 +880,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
         ),
         onPressed: () {
           if (clickType == 'redirect') {
-            openUrl();
+            openUrl(urlLink ?? '');
           } else {
             submitForm();
           }
@@ -903,7 +910,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
               tickOffset: 20,
               showLastLabel: true,
               centerY: 0.4,
-              axisLabelStyle: GaugeTextStyle(),
+              axisLabelStyle: const GaugeTextStyle(),
               ranges: <GaugeRange>[
                 GaugeRange(
                     startWidth: 24,
@@ -911,7 +918,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     startValue: 250,
                     endValue: 460,
                     label: "خیلی ضعیف",
-                    labelStyle: GaugeTextStyle(color: Colors.white),
+                    labelStyle: const GaugeTextStyle(color: Colors.white),
                     color: Colors.red),
                 GaugeRange(
                     startWidth: 24,
@@ -919,7 +926,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     startValue: 460,
                     endValue: 520,
                     label: "ضعیف",
-                    labelStyle: GaugeTextStyle(
+                    labelStyle: const GaugeTextStyle(
                       color: Colors.white,
                     ),
                     color: Colors.orange),
@@ -929,7 +936,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     startValue: 520,
                     endValue: 580,
                     label: "متوسط",
-                    labelStyle: GaugeTextStyle(color: Colors.white),
+                    labelStyle: const GaugeTextStyle(color: Colors.white),
                     color: Colors.yellow.shade700),
                 GaugeRange(
                     startWidth: 24,
@@ -937,7 +944,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     startValue: 580,
                     endValue: 640,
                     label: "خوب",
-                    labelStyle: GaugeTextStyle(
+                    labelStyle: const GaugeTextStyle(
                       color: Colors.white,
                     ),
                     color: Colors.green.shade200),
@@ -947,7 +954,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     startValue: 640,
                     endValue: 900,
                     label: "خیلی خوب",
-                    labelStyle: GaugeTextStyle(
+                    labelStyle: const GaugeTextStyle(
                       color: Colors.white,
                     ),
                     color: Colors.green)
@@ -962,9 +969,9 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                       child: Column(
                         children: [
                           Text((0).toString(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
-                          Text('امتیاز اعتباری',
+                          const Text('امتیاز اعتباری',
                               style: TextStyle(fontWeight: FontWeight.bold))
                         ],
                       ),
@@ -984,7 +991,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     Expanded(
                       child: Column(
                         children: [
-                          Row(
+                          const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
@@ -1007,9 +1014,9 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                             width: double.infinity,
                             height: 1,
                             color: Colors.grey.shade300,
-                            margin: EdgeInsets.symmetric(horizontal: 12),
+                            margin: const EdgeInsets.symmetric(horizontal: 12),
                           ),
-                          Text(
+                          const Text(
                             '',
                             style: TextStyle(
                               fontSize: 16,
@@ -1021,16 +1028,16 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                     Expanded(
                       child: Column(
                         children: [
-                          Text(
+                          const Text(
                             'امتیاز شما',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 4,
                           ),
                           Container(
                             width: double.infinity,
-                            margin: EdgeInsets.symmetric(horizontal: 12),
+                            margin: const EdgeInsets.symmetric(horizontal: 12),
                             height: 1,
                             color: Colors.grey.shade300,
                           ),
@@ -1088,8 +1095,9 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                 ? CupertinoIcons.star_lefthalf_fill
                 : CupertinoIcons.star,
         size: 16,
-        color:
-            state == 0 || state == 1 ? Color(0xffFFD700) : Colors.grey.shade300,
+        color: state == 0 || state == 1
+            ? const Color(0xffFFD700)
+            : Colors.grey.shade300,
       ),
     );
   }
@@ -1128,13 +1136,15 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
     widget.onSubmit?.call(_values);
   }
 
-  void openUrl() {
+  void openUrl(String urlLink) {
     //
-    if (widget.initialData!.containsKey('paymentLinkForCreditValidation')) {
-      widget.onSecondaryCall!.call({
-        "redirectUrl": widget.initialData?['paymentLinkForCreditValidation']
-      });
-    }
+    // if (widget.initialData!.containsKey('paymentLinkForCreditValidation')) {
+    //   widget.onSecondaryCall!.call({
+    //     "redirectUrl": widget.initialData?['paymentLinkForCreditValidation']
+    //   });
+    // }
+
+    widget.onSecondaryCall!.call({"redirectUrl": urlLink});
   }
 }
 

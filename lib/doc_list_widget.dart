@@ -13,7 +13,6 @@ class DocUploaderWidget extends StatefulWidget {
   final Function(dynamic) onUploadDone;
   final List<Map<dynamic, dynamic>>? additionalParameters;
   final ValueNotifier<double> uploadedProgress;
-
   final Function(Map<String, dynamic> doc) upload;
   const DocUploaderWidget({
     super.key,
@@ -31,15 +30,15 @@ class DocUploaderWidget extends StatefulWidget {
 }
 
 class _DocUploaderWidgetState extends State<DocUploaderWidget> {
-  // List<File> _docFileList = [];
+  List<String> _docFileList = [];
 
   @override
   void initState() {
     super.initState();
   }
 
-  bool allDocUploaded() {
-    if (widget.uploadedDocCount ==
+  bool allDocPicked() {
+    if (_docFileList.length ==
         widget.docList
             .where((d) => d['status'] != DocumentStatusEnum.approved.value)
             .length) {
@@ -68,7 +67,6 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                     itemCount: widget.docList.length,
                     itemBuilder: (context, index) {
                       var item = widget.docList[index];
-
                       return DocItemWidget(
                         doc: item,
                         isLoading: widget.isLoading,
@@ -77,26 +75,36 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                           widget.onUploadDone(val);
                         },
                         additionalParameters: widget.additionalParameters,
-                        upload: (doc) {
-                          return widget.isLoading ? null : widget.upload(doc);
-                        },
+                        // upload: (doc) {
+                        //   return widget.isLoading ? null : widget.upload(doc);
+                        // },
                         onFilePicked: (file) {
-                          // _docFileList.add(file);
-                          setState(() {});
+                          if (!_docFileList.contains(file['File'])) {
+                            if (allDocPicked()) {
+                              _docFileList.clear();
+                            } else {
+                              _docFileList.add(file['File']);
+                              setState(() {});
+                              if (allDocPicked()) {
+                                widget.upload(file);
+                              }
+                            }
+                          }
                         },
                       );
                     },
                   ),
                 ),
                 ElevatedButton(
-                    style: ButtonStyle(
+                    style: const ButtonStyle(
                         foregroundColor: WidgetStatePropertyAll(Colors.white)),
-                    onPressed: allDocUploaded()
+                    onPressed: allDocPicked()
                         ? () {
                             widget.onUploadDone(null);
+                            print('allDocPicked ***');
                           }
                         : null,
-                    child: Text('تایید'))
+                    child: const Text('تایید'))
               ],
             ),
     );
@@ -108,15 +116,15 @@ class DocItemWidget extends StatefulWidget {
   final bool isLoading;
   final List<Map<dynamic, dynamic>>? additionalParameters;
   final ValueNotifier<double> uploadedProgress;
-  final Function(Map<String, dynamic> doc) upload;
-  final Function(XFile file) onFilePicked;
+  // final Function(Map<String, dynamic> doc) upload;
+  final Function(Map<String, dynamic> mergedJson) onFilePicked;
   final Function(dynamic) onUploadDone;
 
   const DocItemWidget({
     super.key,
     required this.doc,
     required this.onFilePicked,
-    required this.upload,
+    // required this.upload,
     required this.uploadedProgress,
     this.additionalParameters,
     required this.isLoading,
@@ -129,23 +137,33 @@ class DocItemWidget extends StatefulWidget {
 
 class _DocItemWidgetState extends State<DocItemWidget> {
   XFile? _image;
+  var allowedExtensions = <String>[];
+  void getExtensions() {
+    allowedExtensions.clear();
+    var extensions = (widget.doc["fileExtensions"]!.split(',') as List<String>);
+    for (var element in extensions) {
+      allowedExtensions.add(element.replaceAll('.', ''));
+    }
+  }
 
   void _pickFile() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      getExtensions();
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom, allowedExtensions: allowedExtensions);
       if (result != null && result.files.single.path != null) {
         final file = result.files.single.xFile;
-        widget.onFilePicked(file);
         setState(() {
           _image = file;
         });
+        widget.onFilePicked(_confirmAndSend() ?? {});
       }
     } catch (e) {
       debugPrint('$e');
     }
   }
 
-  void _confirmAndSend() async {
+  Map<String, dynamic>? _confirmAndSend() {
     try {
       Map<dynamic, dynamic> requestJson = {};
       widget.additionalParameters
@@ -159,7 +177,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
           "File": _image!.path,
         }.map((key, value) => MapEntry(key.toString(), value)),
       };
-      widget.upload(mergedJson);
+      return mergedJson;
     } catch (e) {
       debugPrint('$e');
     }
@@ -264,7 +282,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
             if (rejectionReason != null && rejectionReason != "")
               Row(
                 children: [
-                  Text('علت رد :'),
+                  const Text('علت رد :'),
                   Text(
                     rejectionReason,
                     style: TextStyle(
@@ -280,30 +298,44 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                   backgroundColor: WidgetStatePropertyAll(
                       statusInt == DocumentStatusEnum.approved.value
                           ? Colors.blueGrey.shade100
-                          : Color(0xff223369))),
+                          : const Color(0xff223369))),
               onPressed: statusInt == DocumentStatusEnum.approved.value
                   ? null
                   : _pickFile,
-              child: const Text(
-                'انتخاب فایل',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            ElevatedButton(
-              style: ButtonStyle(
-                  foregroundColor: WidgetStatePropertyAll(Colors.white)),
-              onPressed: _image == null ? null : _confirmAndSend,
               child: ValueListenableBuilder(
                 valueListenable: widget.uploadedProgress,
                 builder: (context, value, child) {
                   return widget.isLoading
-                      ? CupertinoActivityIndicator()
-                      : Text((value > 0.0 && value < 100.0)
-                          ? '${value.toInt()}'
-                          : 'تایید و ارسال');
+                      ? const CupertinoActivityIndicator()
+                      : Text(
+                          (value > 0.0 && value < 100.0)
+                              ? '${value.toInt()}'
+                              : 'انتخاب فایل',
+                          style: const TextStyle(color: Colors.white),
+                        );
                 },
               ),
+
+              // const Text(
+              //   'انتخاب فایل',
+              //   style: TextStyle(color: Colors.white),
+              // ),
             ),
+            // ElevatedButton(
+            //   style: const ButtonStyle(
+            //       foregroundColor: WidgetStatePropertyAll(Colors.white)),
+            //   onPressed: _image == null ? null : _confirmAndSend,
+            //   child: ValueListenableBuilder(
+            //     valueListenable: widget.uploadedProgress,
+            //     builder: (context, value, child) {
+            //       return widget.isLoading
+            //           ? const CupertinoActivityIndicator()
+            //           : Text((value > 0.0 && value < 100.0)
+            //               ? '${value.toInt()}'
+            //               : 'تایید و ارسال');
+            //     },
+            //   ),
+            // ),
           ],
         ),
       ),
