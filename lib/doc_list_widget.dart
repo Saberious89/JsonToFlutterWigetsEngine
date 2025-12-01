@@ -306,7 +306,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                 valueListenable: widget.uploadedProgress,
                 builder: (context, value, child) {
                   return widget.isLoading
-                      ? const CupertinoActivityIndicator()
+                      ? const CupertinoActivityIndicator(color: Colors.white)
                       : Text(
                           (value > 0.0 && value < 100.0)
                               ? '${value.toInt()}'
