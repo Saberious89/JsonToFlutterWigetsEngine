@@ -51,7 +51,7 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height - 120,
+      height: MediaQuery.sizeOf(context).height * .75,
       child: widget.docList.isEmpty
           ? Center(
               child: TextButton(
