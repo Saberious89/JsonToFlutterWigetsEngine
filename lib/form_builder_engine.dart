@@ -14,10 +14,11 @@ typedef GetDocList = void Function(dynamic values);
 class FormBuilderEngine extends StatefulWidget {
   final bool? isSubmitLoading;
   final bool isUploadLoading;
+  final bool? isAllFilesUploaded;
   final Map<String, dynamic> formJson;
   final Map<String, dynamic>? initialData;
   final ValueNotifier<double>? uploadedProgress;
-  final int uploadedDocCount;
+  // final int uploadedDocCount;
   final OnSubmit? onSubmit;
   final Function(dynamic) onUploadDone;
   final SecondaryFunc? onSecondaryCall;
@@ -33,8 +34,9 @@ class FormBuilderEngine extends StatefulWidget {
     this.uploadedProgress,
     this.docUpload,
     required this.isUploadLoading,
-    required this.uploadedDocCount,
+    // required this.uploadedDocCount,
     required this.onUploadDone,
+    this.isAllFilesUploaded,
   });
 
   @override
@@ -745,18 +747,38 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
       String agreementId = initalValues['agreementId'];
       props['customerId'] = customerId;
       props['agreementId'] = agreementId;
-      return DocUploaderWidget(
-        docList: initalValues[key],
-        additionalParameters: [props],
-        uploadedProgress: widget.uploadedProgress ?? ValueNotifier<double>(0),
-        isLoading: widget.isUploadLoading,
-        uploadedDocCount: widget.uploadedDocCount,
-        upload: (doc) {
-          widget.docUpload!(doc);
-        },
-        onUploadDone: (val) {
-          widget.onUploadDone(val);
-        },
+      return SizedBox(
+        height: MediaQuery.sizeOf(context).height * .75,
+        child: Column(
+          children: [
+            Expanded(
+              child: DocUploaderWidget(
+                docList: initalValues[key],
+                additionalParameters: [props],
+                uploadedProgress:
+                    widget.uploadedProgress ?? ValueNotifier<double>(0),
+                isLoading: widget.isUploadLoading,
+                // uploadedDocCount: widget.uploadedDocCount,
+                upload: (doc) {
+                  widget.docUpload!(doc);
+                },
+                onUploadDone: (val) {
+                  widget.onUploadDone(val);
+                },
+              ),
+            ),
+            ElevatedButton(
+                style: const ButtonStyle(
+                    foregroundColor: WidgetStatePropertyAll(Colors.white)),
+                onPressed: widget.isAllFilesUploaded == true
+                    ? () {
+                        widget.onUploadDone(null);
+                        print('allDocPicked ***');
+                      }
+                    : null,
+                child: const Text('تایید'))
+          ],
+        ),
       );
     } else {
       return const SizedBox.shrink();

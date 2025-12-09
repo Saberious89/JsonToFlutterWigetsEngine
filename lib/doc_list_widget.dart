@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 class DocUploaderWidget extends StatefulWidget {
   final List<dynamic> docList;
   final bool isLoading;
-  final int uploadedDocCount;
+  // final int uploadedDocCount;
   final Function(dynamic) onUploadDone;
   final List<Map<dynamic, dynamic>>? additionalParameters;
   final ValueNotifier<double> uploadedProgress;
@@ -21,7 +21,7 @@ class DocUploaderWidget extends StatefulWidget {
     required this.uploadedProgress,
     this.additionalParameters,
     required this.isLoading,
-    required this.uploadedDocCount,
+    // required this.uploadedDocCount,
     required this.onUploadDone,
   });
 
@@ -95,16 +95,6 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                     },
                   ),
                 ),
-                ElevatedButton(
-                    style: const ButtonStyle(
-                        foregroundColor: WidgetStatePropertyAll(Colors.white)),
-                    onPressed: allDocPicked()
-                        ? () {
-                            widget.onUploadDone(null);
-                            print('allDocPicked ***');
-                          }
-                        : null,
-                    child: const Text('تایید'))
               ],
             ),
     );
@@ -156,7 +146,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
         setState(() {
           _image = file;
         });
-        widget.onFilePicked(_confirmAndSend() ?? {});
+        // widget.onFilePicked(_confirmAndSend() ?? {});
       }
     } catch (e) {
       debugPrint('$e');
