@@ -146,7 +146,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
         setState(() {
           _image = file;
         });
-        // widget.onFilePicked(_confirmAndSend() ?? {});
+        widget.onFilePicked(_confirmAndSend() ?? {});
       }
     } catch (e) {
       debugPrint('$e');

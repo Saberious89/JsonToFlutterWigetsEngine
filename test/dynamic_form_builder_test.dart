@@ -16,7 +16,6 @@ void main() {
           home: FormBuilderEngine(
             formJson: formJson,
             isUploadLoading: false,
-            uploadedDocCount: 2,
             onUploadDone: (val) {},
           ),
         ),
@@ -39,7 +38,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -82,7 +80,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -124,7 +121,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -175,7 +171,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -217,7 +212,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -254,7 +248,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -301,7 +294,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -343,7 +335,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
@@ -380,7 +371,6 @@ void main() {
           home: FormBuilderEngine(
               formJson: formJson,
               isUploadLoading: false,
-              uploadedDocCount: 2,
               onUploadDone: (val) {}),
         ),
       );
