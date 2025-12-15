@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 class DocUploaderWidget extends StatefulWidget {
   final List<dynamic> docList;
   final bool isLoading;
+  final bool? isFilePickerDisable;
   // final int uploadedDocCount;
   final Function(dynamic) onUploadDone;
   final List<Map<dynamic, dynamic>>? additionalParameters;
@@ -23,6 +24,7 @@ class DocUploaderWidget extends StatefulWidget {
     required this.isLoading,
     // required this.uploadedDocCount,
     required this.onUploadDone,
+    this.isFilePickerDisable,
   });
 
   @override
@@ -67,9 +69,11 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                     itemCount: widget.docList.length,
                     itemBuilder: (context, index) {
                       var item = widget.docList[index];
+
                       return DocItemWidget(
                         doc: item,
                         isLoading: widget.isLoading,
+                        isFilePickerDisable: widget.isFilePickerDisable,
                         uploadedProgress: widget.uploadedProgress,
                         onUploadDone: (val) {
                           widget.onUploadDone(val);
@@ -80,14 +84,16 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                         // },
                         onFilePicked: (file) {
                           if (!_docFileList.contains(file['File'])) {
+                            // if (allDocPicked()) {
+                            //   _docFileList.clear();
+                            // } else {
+                            // }
+                            _docFileList.add(file['File']);
+                            setState(() {});
                             if (allDocPicked()) {
+                              widget.upload(file);
                               _docFileList.clear();
-                            } else {
-                              _docFileList.add(file['File']);
                               setState(() {});
-                              if (allDocPicked()) {
-                                widget.upload(file);
-                              }
                             }
                           }
                         },
@@ -104,6 +110,7 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
 class DocItemWidget extends StatefulWidget {
   final Map<dynamic, dynamic> doc;
   final bool isLoading;
+  final bool? isFilePickerDisable;
   final List<Map<dynamic, dynamic>>? additionalParameters;
   final ValueNotifier<double> uploadedProgress;
   // final Function(Map<String, dynamic> doc) upload;
@@ -119,6 +126,7 @@ class DocItemWidget extends StatefulWidget {
     this.additionalParameters,
     required this.isLoading,
     required this.onUploadDone,
+    this.isFilePickerDisable,
   });
 
   @override
@@ -203,7 +211,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
   @override
   Widget build(BuildContext context) {
     final docTitle = widget.doc['documentTitle'];
-    final rejectionReason = widget.doc['rejectionReason'];
+    String? rejectionReason = widget.doc['rejectionReason'];
     final filePath = widget.doc['filePath'];
     final statusInt = widget.doc['status'];
 
@@ -286,12 +294,16 @@ class _DocItemWidgetState extends State<DocItemWidget> {
             ElevatedButton(
               style: ButtonStyle(
                   backgroundColor: WidgetStatePropertyAll(
-                      statusInt == DocumentStatusEnum.approved.value
+                      statusInt == DocumentStatusEnum.approved.value ||
+                              (widget.isFilePickerDisable == true)
                           ? Colors.blueGrey.shade100
                           : const Color(0xff223369))),
-              onPressed: statusInt == DocumentStatusEnum.approved.value
+              onPressed: statusInt == DocumentStatusEnum.approved.value ||
+                      (widget.isFilePickerDisable == true)
                   ? null
-                  : _pickFile,
+                  : () {
+                      _pickFile();
+                    },
               child: ValueListenableBuilder(
                 valueListenable: widget.uploadedProgress,
                 builder: (context, value, child) {

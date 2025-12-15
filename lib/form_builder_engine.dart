@@ -23,6 +23,8 @@ class FormBuilderEngine extends StatefulWidget {
   final Function(dynamic) onUploadDone;
   final SecondaryFunc? onSecondaryCall;
   final Function(Map<String, dynamic> doc)? docUpload;
+  final Function(int mustUploadDocCount)? setMustUploadDocCount;
+  final bool? isFilePickerDisable;
 
   const FormBuilderEngine({
     super.key,
@@ -37,6 +39,8 @@ class FormBuilderEngine extends StatefulWidget {
     // required this.uploadedDocCount,
     required this.onUploadDone,
     this.isAllFilesUploaded,
+    this.setMustUploadDocCount,
+    this.isFilePickerDisable,
   });
 
   @override
@@ -135,8 +139,13 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
         child = _buildRadioButton(key, props, schema);
         break;
       case 'MatUpload':
-        child = _buildMatUpload(key, props, schema,
-            initalValues: widget.initialData);
+        child = _buildMatUpload(
+          key,
+          props,
+          schema,
+          initalValues: widget.initialData,
+          isDisabled: widget.isFilePickerDisable ?? false,
+        );
         break;
       case 'MatButton':
         child = _buildMatButton(key, props, schema);
@@ -738,7 +747,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
 
   Widget _buildMatUpload(
       String key, Map<dynamic, dynamic> props, Map<String, dynamic> schema,
-      {Map<String, dynamic>? initalValues}) {
+      {Map<String, dynamic>? initalValues, bool isDisabled = false}) {
     if (initalValues != null &&
         initalValues.isNotEmpty &&
         initalValues.containsKey(key)) {
@@ -747,6 +756,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
       String agreementId = initalValues['agreementId'];
       props['customerId'] = customerId;
       props['agreementId'] = agreementId;
+      widget.setMustUploadDocCount!(initalValues[key].length);
       return SizedBox(
         height: MediaQuery.sizeOf(context).height * .75,
         child: Column(
@@ -758,6 +768,7 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
                 uploadedProgress:
                     widget.uploadedProgress ?? ValueNotifier<double>(0),
                 isLoading: widget.isUploadLoading,
+                isFilePickerDisable: isDisabled,
                 // uploadedDocCount: widget.uploadedDocCount,
                 upload: (doc) {
                   widget.docUpload!(doc);
