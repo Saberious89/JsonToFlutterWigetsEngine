@@ -4,6 +4,7 @@ import 'package:cross_file/cross_file.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DocUploaderWidget extends StatefulWidget {
@@ -33,6 +34,7 @@ class DocUploaderWidget extends StatefulWidget {
 
 class _DocUploaderWidgetState extends State<DocUploaderWidget> {
   List<String> _docFileList = [];
+  List<List<int>> _docFileBytesList = [];
 
   @override
   void initState() {
@@ -40,7 +42,7 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
   }
 
   bool allDocPicked() {
-    if (_docFileList.length ==
+    if ((kIsWeb ? _docFileBytesList.length : _docFileList.length) ==
         widget.docList
             .where((d) => d['status'] != DocumentStatusEnum.approved.value)
             .length) {
@@ -83,17 +85,30 @@ class _DocUploaderWidgetState extends State<DocUploaderWidget> {
                         //   return widget.isLoading ? null : widget.upload(doc);
                         // },
                         onFilePicked: (file) {
-                          if (!_docFileList.contains(file['File'])) {
-                            // if (allDocPicked()) {
-                            //   _docFileList.clear();
-                            // } else {
-                            // }
-                            _docFileList.add(file['File']);
-                            setState(() {});
-                            if (allDocPicked()) {
-                              widget.upload(file);
-                              _docFileList.clear();
+                          if (kIsWeb) {
+                            if (!_docFileBytesList
+                                .contains(file['FileBytes'])) {
+                              _docFileBytesList.add(file['FileBytes']);
                               setState(() {});
+                              if (allDocPicked()) {
+                                widget.upload(file);
+                                _docFileBytesList.clear();
+                                setState(() {});
+                              }
+                            }
+                          } else {
+                            if (!_docFileList.contains(file['File'])) {
+                              // if (allDocPicked()) {
+                              //   _docFileList.clear();
+                              // } else {
+                              // }
+                              _docFileList.add(file['File']);
+                              setState(() {});
+                              if (allDocPicked()) {
+                                widget.upload(file);
+                                _docFileList.clear();
+                                setState(() {});
+                              }
                             }
                           }
                         },
@@ -135,6 +150,18 @@ class DocItemWidget extends StatefulWidget {
 
 class _DocItemWidgetState extends State<DocItemWidget> {
   XFile? _image;
+  var _imageBytes;
+
+  @override
+  initState() {
+    super.initState();
+  }
+
+  Future<void> getImageBytes() async {
+    _imageBytes = await _image!.readAsBytes();
+    setState(() {});
+  }
+
   var allowedExtensions = <String>[];
   void getExtensions() {
     allowedExtensions.clear();
@@ -148,13 +175,33 @@ class _DocItemWidgetState extends State<DocItemWidget> {
     try {
       getExtensions();
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.custom, allowedExtensions: allowedExtensions);
-      if (result != null && result.files.single.path != null) {
-        final file = result.files.single.xFile;
-        setState(() {
-          _image = file;
-        });
-        widget.onFilePicked(_confirmAndSend() ?? {});
+          type: FileType.custom,
+          allowedExtensions: allowedExtensions,
+          withData: kIsWeb);
+      // if (result != null && result.files.single.path != null) {
+      //   final file = result.files.single.xFile;
+      //   setState(() {
+      //     _image = file;
+      //   });
+      //   widget.onFilePicked(_confirmAndSend() ?? {});
+      // }
+      if (result != null) {
+        final pickedFile = result.files.single;
+
+        if (kIsWeb) {
+          setState(() {
+            _image = pickedFile.xFile;
+          });
+          await getImageBytes();
+          await Future.delayed(Duration(milliseconds: 200));
+          widget.onFilePicked(_confirmAndSend() ?? {});
+        } else {
+          final file = result.files.single.xFile;
+          setState(() {
+            _image = file;
+          });
+          widget.onFilePicked(_confirmAndSend() ?? {});
+        }
       }
     } catch (e) {
       debugPrint('$e');
@@ -172,12 +219,14 @@ class _DocItemWidgetState extends State<DocItemWidget> {
           "DocumentId": widget.doc['documentId'],
           "DocumentTitle": widget.doc['documentTitle'],
           "ActorType": widget.doc['actorType'],
-          "File": _image!.path,
+          if (!kIsWeb) "File": _image!.path,
+          if (kIsWeb) "FileBytes": _imageBytes
         }.map((key, value) => MapEntry(key.toString(), value)),
       };
       return mergedJson;
     } catch (e) {
       debugPrint('$e');
+      return null;
     }
   }
 
@@ -244,12 +293,21 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                           tag: docTitle,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(_image!.path),
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
+                            child: (_image == null || _imageBytes == null)
+                                ? SizedBox()
+                                : kIsWeb && _imageBytes != null
+                                    ? Image.memory(
+                                        _imageBytes,
+                                        height: 100,
+                                        width: 100,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.file(
+                                        File(_image!.path),
+                                        height: 100,
+                                        width: 100,
+                                        fit: BoxFit.cover,
+                                      ),
                           ),
                         ),
                       )
@@ -366,7 +424,7 @@ class FullImageView extends StatelessWidget {
         child: Center(
           child: Hero(
             tag: heroTag,
-            child: (imagePath != null && imagePath!.isNotEmpty)
+            child: (imagePath != null && imagePath!.isNotEmpty && kIsWeb)
                 ? Image.network(imagePath!, fit: BoxFit.contain)
                 : Image.file(File(imageFile!.path), fit: BoxFit.contain),
           ),
