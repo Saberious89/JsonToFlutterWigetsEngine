@@ -293,9 +293,11 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                           tag: docTitle,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: (_image == null || _imageBytes == null)
-                                ? SizedBox()
-                                : kIsWeb && _imageBytes != null
+                            child:
+                                // (_image == null || _imageBytes == null)
+                                //     ? SizedBox()
+                                // :
+                                kIsWeb && _imageBytes != null
                                     ? Image.memory(
                                         _imageBytes,
                                         height: 100,
