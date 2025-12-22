@@ -150,7 +150,7 @@ class DocItemWidget extends StatefulWidget {
 
 class _DocItemWidgetState extends State<DocItemWidget> {
   XFile? _image;
-  var _imageBytes;
+  Uint8List? _imageBytes;
 
   @override
   initState() {
@@ -243,14 +243,14 @@ class _DocItemWidgetState extends State<DocItemWidget> {
     );
   }
 
-  void _openFullImageWithPath(BuildContext context, filePath) {
-    if (filePath == null) return;
+  void _openFullImageWithPath(BuildContext context, Uint8List fileBytes) {
+    // if (fileBytes == null) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => FullImageView(
           // imageFile: File(filePath),
-          imagePath: filePath,
+          imageBytes: fileBytes,
           heroTag: widget.doc['documentTitle'],
         ),
       ),
@@ -280,7 +280,8 @@ class _DocItemWidgetState extends State<DocItemWidget> {
         ),
         child: Column(
           children: [
-            _image == null && (filePath == null || filePath == "")
+            (_image == null && (filePath == null || filePath == "") ||
+                    _imageBytes == null)
                 ? Icon(
                     Icons.cloud_upload,
                     size: 48,
@@ -288,7 +289,9 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                   )
                 : _image != null
                     ? GestureDetector(
-                        onTap: () => _openFullImage(context),
+                        onTap: () => kIsWeb
+                            ? _openFullImageWithPath(context, _imageBytes!)
+                            : _openFullImage(context),
                         child: Hero(
                           tag: docTitle,
                           child: ClipRRect(
@@ -299,7 +302,7 @@ class _DocItemWidgetState extends State<DocItemWidget> {
                                 // :
                                 kIsWeb && _imageBytes != null
                                     ? Image.memory(
-                                        _imageBytes,
+                                        _imageBytes!,
                                         height: 100,
                                         width: 100,
                                         fit: BoxFit.cover,
@@ -407,13 +410,13 @@ class _DocItemWidgetState extends State<DocItemWidget> {
 
 class FullImageView extends StatelessWidget {
   final XFile? imageFile;
-  final String? imagePath;
+  final Uint8List? imageBytes;
   final String heroTag;
 
   const FullImageView({
     super.key,
     this.imageFile,
-    this.imagePath,
+    this.imageBytes,
     required this.heroTag,
   });
 
@@ -426,8 +429,8 @@ class FullImageView extends StatelessWidget {
         child: Center(
           child: Hero(
             tag: heroTag,
-            child: (imagePath != null && imagePath!.isNotEmpty && kIsWeb)
-                ? Image.network(imagePath!, fit: BoxFit.contain)
+            child: (imageBytes != null && imageBytes!.isNotEmpty && kIsWeb)
+                ? Image.memory(imageBytes!, fit: BoxFit.contain)
                 : Image.file(File(imageFile!.path), fit: BoxFit.contain),
           ),
         ),
