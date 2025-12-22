@@ -781,13 +781,16 @@ class FormBuilderEngineState extends State<FormBuilderEngine> {
             ElevatedButton(
                 style: const ButtonStyle(
                     foregroundColor: WidgetStatePropertyAll(Colors.white)),
-                onPressed: widget.isAllFilesUploaded == true
+                onPressed: widget.isAllFilesUploaded == true &&
+                        widget.isSubmitLoading != true
                     ? () {
                         widget.onUploadDone(null);
                         print('allDocPicked ***');
                       }
                     : null,
-                child: const Text('تایید'))
+                child: widget.isSubmitLoading == true
+                    ? const CupertinoActivityIndicator(color: Colors.white)
+                    : const Text('تایید'))
           ],
         ),
       );

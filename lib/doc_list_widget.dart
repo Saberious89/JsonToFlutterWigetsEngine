@@ -280,8 +280,8 @@ class _DocItemWidgetState extends State<DocItemWidget> {
         ),
         child: Column(
           children: [
-            (_image == null && (filePath == null || filePath == "") ||
-                    _imageBytes == null)
+            (_image == null &&
+                    (filePath == null || filePath == "" || _imageBytes == null))
                 ? Icon(
                     Icons.cloud_upload,
                     size: 48,
